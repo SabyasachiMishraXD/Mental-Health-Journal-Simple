@@ -7,6 +7,7 @@ const History = () => {
   const [journals, setJournals] = useState([]);
   const [filteredJournals, setFilteredJournals] = useState([]);
   const [selectedMood, setSelectedMood] = useState('all');
+  const [customMood, setCustomMood] = useState('');
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
@@ -40,46 +41,70 @@ const History = () => {
     fetchJournals();
   }, [navigate]);
 
-  // 🔍 Filter whenever mood changes
+  // 🔍 Filter based on dropdown or custom mood
   useEffect(() => {
-    if (selectedMood === 'all') {
+    const filterMood = customMood.trim().toLowerCase() || selectedMood;
+
+    if (filterMood === 'all' || filterMood === '') {
       setFilteredJournals(journals);
     } else {
-      const filtered = journals.filter(entry => entry.mood?.toLowerCase() === selectedMood);
+      const filtered = journals.filter(entry =>
+        entry.mood?.toLowerCase().includes(filterMood)
+      );
       setFilteredJournals(filtered);
     }
-  }, [selectedMood, journals]);
+  }, [selectedMood, customMood, journals]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-100 to-blue-100 px-4 py-10 flex flex-col items-center">
       <div className="max-w-3xl w-full bg-white p-6 rounded-lg shadow-md">
         <h2 className="text-2xl font-bold text-purple-700 mb-6 text-center">Your Journal History 📖</h2>
 
-        {/* 🎯 Mood Filter Dropdown */}
-        <div className="mb-6 text-center">
-          <label htmlFor="moodFilter" className="mr-2 text-gray-700 font-medium">Filter by Mood:</label>
-          <select
-            id="moodFilter"
-            value={selectedMood}
-            onChange={(e) => setSelectedMood(e.target.value)}
-            className="border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-purple-400"
-          >
-            <option value="all">All</option>
-            <option value="happy">Happy</option>
-            <option value="sad">Sad</option>
-            <option value="anxious">Anxious</option>
-            <option value="grateful">Grateful</option>
-            <option value="excited">Excited</option>
-            <option value="angry">Angry</option>
-            <option value="tired">Tired</option>
-            {/* Add more if needed */}
-          </select>
+        {/* 🎯 Mood Filter UI */}
+        <div className="mb-6 flex flex-col md:flex-row items-center justify-center gap-4">
+          {/* Dropdown */}
+          <div>
+            <label htmlFor="moodFilter" className="mr-2 text-gray-700 font-medium">
+              Filter by Mood:
+            </label>
+            <select
+              id="moodFilter"
+              value={selectedMood}
+              onChange={(e) => setSelectedMood(e.target.value)}
+              className="border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-purple-400"
+            >
+              <option value="all">All</option>
+              <option value="happy">Happy</option>
+              <option value="sad">Sad</option>
+              <option value="anxious">Anxious</option>
+              <option value="grateful">Grateful</option>
+              <option value="excited">Excited</option>
+              <option value="angry">Angry</option>
+              <option value="tired">Tired</option>
+              {/* Add more as needed */}
+            </select>
+          </div>
+
+          {/* OR input manually */}
+          <div>
+            <label htmlFor="customMood" className="mr-2 text-gray-700 font-medium">
+              Or type mood:
+            </label>
+            <input
+              type="text"
+              id="customMood"
+              placeholder="e.g. calm"
+              value={customMood}
+              onChange={(e) => setCustomMood(e.target.value)}
+              className="border rounded px-3 py-1 focus:outline-none focus:ring-2 focus:ring-purple-400"
+            />
+          </div>
         </div>
 
         {loading ? (
           <p className="text-center text-purple-600 italic">Loading your entries...</p>
         ) : filteredJournals.length === 0 ? (
-          <p className="text-center text-gray-500">No journal entries match your selected mood.</p>
+          <p className="text-center text-gray-500">No journal entries match your filter.</p>
         ) : (
           <div className="space-y-4">
             {filteredJournals.map((entry) => (
